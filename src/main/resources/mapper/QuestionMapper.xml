@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cjt.mapper.QuestionMapper">
+    <resultMap id="SearchResultMap" type="com.cjt.commo.bean.QuestionSearchResult">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="question" property="question" jdbcType="VARCHAR"/>
+        <result column="answer_a" property="answerA" jdbcType="VARCHAR"/>
+        <result column="answer_b" property="answerB" jdbcType="VARCHAR"/>
+        <result column="answer_c" property="answerC" jdbcType="VARCHAR"/>
+        <result column="answer_d" property="answerD" jdbcType="VARCHAR"/>
+        <result column="right_answer" property="rightAnswer" jdbcType="VARCHAR"/>
+        <result column="question_type" property="questionType" jdbcType="VARCHAR"/>
+        <result column="num" property="wrongTime"/>
+    </resultMap>
+
+    <sql id="search_get">
+        id, question, answer_a, answer_b,answer_c,answer_d,right_answer,question_type,ifnull(num,0) num
+    </sql>
+    <select id="search" resultMap="SearchResultMap">
+        select <include refid="search_get"/>
+        from m_question a left join (select question_id,count(*) num from wrong_question GROUP BY question_id) b
+        on a.id =b.question_id
+        <where>
+            <if test="type != null">
+                and question_type = #{type,jdbcType=VARCHAR}
+            </if>
+            <if test="question != null">
+                and question LIKE CONCAT('%',#{question},'%')
+            </if>
+        </where>
+        <if test="wrongTimes1 != null and wrongTimes2 !=null">
+            having num >= #{wrongTimes1,jdbcType=INTEGER} and num &lt;= #{wrongTimes2,jdbcType=INTEGER}
+        </if>
+        <if test="wrongTimes1 == null and wrongTimes2 !=null">
+            having num &lt;= #{wrongTimes2,jdbcType=INTEGER}
+        </if>
+        <if test="wrongTimes1 != null and wrongTimes2 ==null">
+            having num >= #{wrongTimes1,jdbcType=INTEGER}
+        </if>
+        limit #{start},#{end}
+    </select>
+
+    <select id="getWrong" resultMap="SearchResultMap">
+        select <include refid="search_get"/>
+        from (select question_id,count(*) num from wrong_question group by question_id) a ,m_question
+        where a.question_id = m_question.id and question_type = #{type}
+    </select>
+</mapper>

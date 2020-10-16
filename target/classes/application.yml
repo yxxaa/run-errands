@@ -1,0 +1,19 @@
+# DataSource Config
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/run_errands?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  devtools:
+    restart:
+      enabled: true  #设置开启热部署
+      additional-paths: src/main/java #重启目录
+      exclude: WEB-INF/**
+    freemarker:
+      cache: false    #页面不加载缓存，修改即时生效
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**Mapper.xml
+
+server:
+  port: 8085
